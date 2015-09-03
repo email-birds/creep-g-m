@@ -1,6 +1,7 @@
 package com.tablekat.agame;
 
 import com.badlogic.gdx.ApplicationAdapter;
+import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Color;
@@ -10,10 +11,24 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureAtlas;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.input.GestureDetector;
 import com.badlogic.gdx.input.GestureDetector.GestureListener;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.scenes.scene2d.Group;
+import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.ui.Skin;
+import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.scenes.scene2d.ui.TextButton.TextButtonStyle;
+import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
+import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
+import com.badlogic.gdx.utils.viewport.FitViewport;
+import com.badlogic.gdx.utils.viewport.Viewport;
 
+import java.awt.event.InputEvent;
 import java.util.ArrayList;
 
 public class AGame extends ApplicationAdapter implements GestureListener {
@@ -25,6 +40,8 @@ public class AGame extends ApplicationAdapter implements GestureListener {
     private String meme = "";
     private int width = 1280;
     private int height = 720;
+    private Skin skin;
+    private Stage stage;
 
     private Texture creepTex;
     private Texture creepEnemyTex;
@@ -33,13 +50,27 @@ public class AGame extends ApplicationAdapter implements GestureListener {
     private ArrayList<Sprite> creeps;
     private ArrayList<Sprite> creepEnemies;
 
-	@Override
+    @Override
 	public void create () {
         camera = new OrthographicCamera(width, height);
         //camera = new OrthographicCamera();
-        camera.translate(-width/2, -height/2);
+        camera.translate(width/2.0f, height/2.0f);
+        camera.update();
 
 		batch = new SpriteBatch();
+        //skin = new Skin(Gdx.files.internal("data/uiskin.json"));
+        //stage = new Stage();
+
+        /*final TextButton button = new TextButton("nice meme", skin, "default");
+        button.setWidth(200f);
+        button.setHeight(20f);
+        button.setPosition(Gdx.graphics.getWidth() / 2 - 100f, Gdx.graphics.getHeight() / 2 - 10f);
+        button.addListener(new ClickListener() {
+            public void clicked(InputEvent event, float x, float y) {
+                button.setText("nice ;3");
+            }
+        });
+        stage.addActor(button);*/
 
         creepTex = new Texture("Creep.png");
         creepEnemyTex = new Texture("CreepEnemy.png");
@@ -56,6 +87,7 @@ public class AGame extends ApplicationAdapter implements GestureListener {
         font.setColor(Color.RED);
 
         Gdx.input.setInputProcessor(new GestureDetector(this));
+        //Gdx.input.setInputProcessor(stage);
 
         meme = "Hey there nice meme, friend";
 	}
@@ -88,18 +120,19 @@ public class AGame extends ApplicationAdapter implements GestureListener {
             creeps.get(i).setPosition(centerX + 100 * (float) Math.cos(2.0 * i / numCreeps * Math.PI),
                     centerY + 100 * (float) Math.sin(2.0 * i / numCreeps * Math.PI));
         }
-
-        if(Gdx.input.isKeyPressed(Input.Keys.LEFT)){
-            creeps.get(0).translateX(-10f);
-        }
-        if(Gdx.input.isKeyPressed(Input.Keys.RIGHT)){
-            creeps.get(0).translateX(10f);
-        }
+        creeps.get(1).setPosition(0,0);
+        creepEnemies.get(0).setPosition(width, height);
 
         batch.setProjectionMatrix(camera.combined);
 		batch.begin();
-        //batch.draw(creepTex, 100, 100);
-        //batch.draw(creepEnemyTex, 200, 200);
+
+        ShapeRenderer shapeRenderer = new ShapeRenderer();
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
+        shapeRenderer.setColor(Color.RED);
+        shapeRenderer.rect(0, 0, width, height);
+        shapeRenderer.end();
+
+        //stage.draw();
         for(int i=0; i < numCreepEnemies; ++i) {
             creepEnemies.get(i).draw(batch);
         }
@@ -133,6 +166,11 @@ public class AGame extends ApplicationAdapter implements GestureListener {
 
     @Override
     public boolean tap(float x, float y, int count, int button){
+        /*Vector3 worldCoords = camera.unproject(new Vector3(x, y, 0));
+        if(creeps.get(0).getBoundingRectangle().contains(worldCoords.x, worldCoords.y)){
+            creeps.get(0).translateX((float)Math.random() * 10 - 5);
+            creeps.get(0).translateY((float) Math.random() * 10 - 5);
+        }*/
         return false;
     }
 
@@ -148,8 +186,10 @@ public class AGame extends ApplicationAdapter implements GestureListener {
 
     @Override
     public boolean pan(float x, float y, float deltaX, float deltaY){
+        System.out.print(camera.position.x + "," + camera.position.y + " -> ");
         camera.translate(-deltaX, deltaY);
         camera.update();
+        System.out.println(camera.position.x + "," + camera.position.y);
         return false;
     }
 
