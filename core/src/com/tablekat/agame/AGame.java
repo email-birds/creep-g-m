@@ -11,9 +11,10 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.input.GestureDetector;
+import com.badlogic.gdx.input.GestureDetector.GestureListener;
 import com.badlogic.gdx.math.Vector2;
 
-public class AGame extends ApplicationAdapter, GestureDetector.GestureListener {
+public class AGame extends ApplicationAdapter implements GestureListener {
     private OrthographicCamera camera;
     private SpriteBatch batch;
     private Texture img;
@@ -127,6 +128,11 @@ public class AGame extends ApplicationAdapter, GestureDetector.GestureListener {
     public boolean pan(float x, float y, float deltaX, float deltaY){
         camera.translate(deltaX, 0);
         camera.update();
+        return false;
+    }
+
+    @Override
+    public boolean panStop(float x, float y, int pointer, int button){
         return false;
     }
 
