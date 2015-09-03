@@ -79,14 +79,14 @@ public class AGame extends ApplicationAdapter implements GestureListener {
         float enemyCenterX = 0.8f * width;
         float enemyCenterY = 0.5f * height;
         for(int i=0; i < numCreepEnemies; ++i) {
-            creepEnemies.get(i).setPosition(enemyCenterX + 100 * (float) Math.cos(i / numCreepEnemies * 2 * Math.PI),
-                    enemyCenterY + 100 * (float) Math.sin(i / numCreepEnemies * 2 * Math.PI));
+            creepEnemies.get(i).setPosition(enemyCenterX + 100 * (float) Math.cos(2.0 * i / numCreepEnemies * Math.PI),
+                    enemyCenterY + 100 * (float) Math.sin(2.0 * i / numCreepEnemies * Math.PI));
         }
         float centerX = 0.2f * width;
         float centerY = 0.5f * height;
         for(int i=1; i < numCreeps; ++i) {
-            creeps.get(i).setPosition(centerX + 100 * (float) Math.cos(i / numCreeps * 2 * Math.PI),
-                    centerY + 100 * (float) Math.sin(i / numCreeps * 2 * Math.PI));
+            creeps.get(i).setPosition(centerX + 100 * (float) Math.cos(2.0 * i / numCreeps * Math.PI),
+                    centerY + 100 * (float) Math.sin(2.0 * i / numCreeps * Math.PI));
         }
 
         if(Gdx.input.isKeyPressed(Input.Keys.LEFT)){
