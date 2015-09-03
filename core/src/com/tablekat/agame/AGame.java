@@ -5,6 +5,7 @@ import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.FPSLogger;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
@@ -26,6 +27,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton.TextButtonStyle;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.viewport.FitViewport;
+import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 
 import java.awt.event.InputEvent;
@@ -40,15 +42,11 @@ public class AGame extends ApplicationAdapter implements GestureListener {
     private String meme = "";
     private int width = 1280;
     private int height = 720;
-    private Skin skin;
     private Stage stage;
 
-    private Texture creepTex;
-    private Texture creepEnemyTex;
-    private int numCreeps;
-    private int numCreepEnemies;
-    private ArrayList<Sprite> creeps;
-    private ArrayList<Sprite> creepEnemies;
+    private FPSLogger fpsLogger;
+
+    private World world = new World();
 
     @Override
 	public void create () {
@@ -59,7 +57,7 @@ public class AGame extends ApplicationAdapter implements GestureListener {
 
 		batch = new SpriteBatch();
         //skin = new Skin(Gdx.files.internal("data/uiskin.json"));
-        //stage = new Stage();
+        stage = new Stage(new ScreenViewport());
 
         /*final TextButton button = new TextButton("nice meme", skin, "default");
         button.setWidth(200f);
@@ -72,22 +70,38 @@ public class AGame extends ApplicationAdapter implements GestureListener {
         });
         stage.addActor(button);*/
 
-        creepTex = new Texture("Creep.png");
-        creepEnemyTex = new Texture("CreepEnemy.png");
-
-        creeps = new ArrayList<Sprite>();
-        creepEnemies = new ArrayList<Sprite>();
-        int numSprites = numCreeps = numCreepEnemies = 5;
+        int numSprites = 5;
         for(int i=0; i < numSprites; ++i){
-            creeps.add(new Sprite(creepTex));
-            creepEnemies.add(new Sprite(creepEnemyTex));
+            world.creeps.add(new Creep(world, false));
+            stage.addActor(world.creeps.get(i));
+            world.creepEnemies.add(new Creep(world, true));
+            stage.addActor(world.creepEnemies.get(i));
         }
+
+        float enemyCenterX = 0.8f * width;
+        float enemyCenterY = 0.5f * height;
+        int numCreepEnemies = world.creepEnemies.size();
+        for(int i=0; i < numCreepEnemies; ++i) {
+            world.creepEnemies.get(i).setPosition(enemyCenterX + 100 * (float) Math.cos(2.0 * i / numCreepEnemies * Math.PI),
+                    enemyCenterY + 100 * (float) Math.sin(2.0 * i / numCreepEnemies * Math.PI));
+        }
+        float centerX = 0.2f * width;
+        float centerY = 0.5f * height;
+        int numCreeps = world.creeps.size();
+        for(int i=1; i < numCreeps; ++i) {
+            world.creeps.get(i).setPosition(centerX + 100 * (float) Math.cos(2.0 * i / numCreeps * Math.PI),
+                    centerY + 100 * (float) Math.sin(2.0 * i / numCreeps * Math.PI));
+        }
+        world.creeps.get(0).setPosition(0, 0);
+        world.creepEnemies.get(0).setPosition(width, height);
 
         font = new BitmapFont();
         font.setColor(Color.RED);
 
-        Gdx.input.setInputProcessor(new GestureDetector(this));
-        //Gdx.input.setInputProcessor(stage);
+        fpsLogger = new FPSLogger();
+
+        //Gdx.input.setInputProcessor(new GestureDetector(this));
+        Gdx.input.setInputProcessor(stage);
 
         meme = "Hey there nice meme, friend";
 	}
@@ -96,8 +110,6 @@ public class AGame extends ApplicationAdapter implements GestureListener {
     public void dispose(){
         batch.dispose();
         font.dispose();
-        creepTex.dispose();
-        creepEnemyTex.dispose();
     }
 
 	@Override
@@ -108,31 +120,12 @@ public class AGame extends ApplicationAdapter implements GestureListener {
         timer++;
         elapsedTime += Gdx.graphics.getDeltaTime();
 
-        float enemyCenterX = 0.8f * width;
-        float enemyCenterY = 0.5f * height;
-        for(int i=0; i < numCreepEnemies; ++i) {
-            creepEnemies.get(i).setPosition(enemyCenterX + 100 * (float) Math.cos(2.0 * i / numCreepEnemies * Math.PI),
-                    enemyCenterY + 100 * (float) Math.sin(2.0 * i / numCreepEnemies * Math.PI));
-        }
-        float centerX = 0.2f * width;
-        float centerY = 0.5f * height;
-        for(int i=1; i < numCreeps; ++i) {
-            creeps.get(i).setPosition(centerX + 100 * (float) Math.cos(2.0 * i / numCreeps * Math.PI),
-                    centerY + 100 * (float) Math.sin(2.0 * i / numCreeps * Math.PI));
-        }
-        creeps.get(1).setPosition(0,0);
-        creepEnemies.get(0).setPosition(width, height);
+        stage.act(Gdx.graphics.getDeltaTime());
+        stage.draw();
 
-        batch.setProjectionMatrix(camera.combined);
+        /*batch.setProjectionMatrix(camera.combined);
 		batch.begin();
 
-        ShapeRenderer shapeRenderer = new ShapeRenderer();
-        shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
-        shapeRenderer.setColor(Color.RED);
-        shapeRenderer.rect(0, 0, width, height);
-        shapeRenderer.end();
-
-        //stage.draw();
         for(int i=0; i < numCreepEnemies; ++i) {
             creepEnemies.get(i).draw(batch);
         }
@@ -140,7 +133,9 @@ public class AGame extends ApplicationAdapter implements GestureListener {
             creeps.get(i).draw(batch);
         }
         font.draw(batch, meme, 200, 200);
-		batch.end();
+		batch.end();*/
+
+        fpsLogger.log();
 	}
 
     @Override
@@ -160,12 +155,14 @@ public class AGame extends ApplicationAdapter implements GestureListener {
 
     @Override
     public boolean touchDown(float x, float y, int pointer, int button){
+        // does nothing
         meme = String.format("(%.2f, %.2f), %d, %d", x/Gdx.graphics.getWidth(), y/Gdx.graphics.getHeight(), pointer, button);
         return false;
     }
 
     @Override
     public boolean tap(float x, float y, int count, int button){
+        // does nothing
         /*Vector3 worldCoords = camera.unproject(new Vector3(x, y, 0));
         if(creeps.get(0).getBoundingRectangle().contains(worldCoords.x, worldCoords.y)){
             creeps.get(0).translateX((float)Math.random() * 10 - 5);
@@ -186,10 +183,9 @@ public class AGame extends ApplicationAdapter implements GestureListener {
 
     @Override
     public boolean pan(float x, float y, float deltaX, float deltaY){
-        System.out.print(camera.position.x + "," + camera.position.y + " -> ");
+        // does nothing
         camera.translate(-deltaX, deltaY);
         camera.update();
-        System.out.println(camera.position.x + "," + camera.position.y);
         return false;
     }
 
