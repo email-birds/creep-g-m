@@ -14,34 +14,50 @@ import com.badlogic.gdx.input.GestureDetector;
 import com.badlogic.gdx.input.GestureDetector.GestureListener;
 import com.badlogic.gdx.math.Vector2;
 
+import java.util.ArrayList;
+
 public class AGame extends ApplicationAdapter implements GestureListener {
     private OrthographicCamera camera;
     private SpriteBatch batch;
-    private Texture img;
-    private Texture creepTex;
-    private Texture creepEnemyTex;
-    private Sprite creepSprite;
-    private Sprite creepEnemySprite;
-	private BitmapFont font;
+    private BitmapFont font;
     private int timer = 0;
     private float elapsedTime = 0;
+    private String meme = "";
+    private int width = 1280;
+    private int height = 720;
+
+    private Texture creepTex;
+    private Texture creepEnemyTex;
+    private int numCreeps;
+    private int numCreepEnemies;
+    private ArrayList<Sprite> creeps;
+    private ArrayList<Sprite> creepEnemies;
 
 	@Override
 	public void create () {
-        camera = new OrthographicCamera(1280, 720);
+        camera = new OrthographicCamera(width, height);
+        //camera = new OrthographicCamera();
+        camera.translate(-width/2, -height/2);
 
 		batch = new SpriteBatch();
 
-		img = new Texture("badlogic.jpg");
         creepTex = new Texture("Creep.png");
         creepEnemyTex = new Texture("CreepEnemy.png");
-        creepSprite = new Sprite(creepTex);
-        creepEnemySprite = new Sprite(creepEnemyTex);
+
+        creeps = new ArrayList<Sprite>();
+        creepEnemies = new ArrayList<Sprite>();
+        int numSprites = numCreeps = numCreepEnemies = 5;
+        for(int i=0; i < numSprites; ++i){
+            creeps.add(new Sprite(creepTex));
+            creepEnemies.add(new Sprite(creepEnemyTex));
+        }
 
         font = new BitmapFont();
         font.setColor(Color.RED);
 
         Gdx.input.setInputProcessor(new GestureDetector(this));
+
+        meme = "Hey there nice meme, friend";
 	}
 
     @Override
@@ -60,31 +76,37 @@ public class AGame extends ApplicationAdapter implements GestureListener {
         timer++;
         elapsedTime += Gdx.graphics.getDeltaTime();
 
-        creepEnemySprite.setPosition(100 * (float) Math.cos(timer / 10.0), 100 * (float) Math.sin(timer / 10.0));
+        float enemyCenterX = 0.8f * width;
+        float enemyCenterY = 0.5f * height;
+        for(int i=0; i < numCreepEnemies; ++i) {
+            creepEnemies.get(i).setPosition(enemyCenterX + 100 * (float) Math.cos(i / numCreepEnemies * 2 * Math.PI),
+                    enemyCenterY + 100 * (float) Math.sin(i / numCreepEnemies * 2 * Math.PI));
+        }
+        float centerX = 0.2f * width;
+        float centerY = 0.5f * height;
+        for(int i=1; i < numCreeps; ++i) {
+            creeps.get(i).setPosition(centerX + 100 * (float) Math.cos(i / numCreeps * 2 * Math.PI),
+                    centerY + 100 * (float) Math.sin(i / numCreeps * 2 * Math.PI));
+        }
 
         if(Gdx.input.isKeyPressed(Input.Keys.LEFT)){
-            if(Gdx.input.isKeyPressed(Input.Keys.CONTROL_LEFT)){
-                creepSprite.translateX(-1f);
-            }else{
-                creepSprite.translateX(-10f);
-            }
+            creeps.get(0).translateX(-10f);
         }
         if(Gdx.input.isKeyPressed(Input.Keys.RIGHT)){
-            if(Gdx.input.isKeyPressed(Input.Keys.CONTROL_LEFT)){
-                creepSprite.translateX(1f);
-            }else{
-                creepSprite.translateX(10f);
-            }
+            creeps.get(0).translateX(10f);
         }
 
         batch.setProjectionMatrix(camera.combined);
 		batch.begin();
-        batch.draw(img, 0, 0);
         //batch.draw(creepTex, 100, 100);
         //batch.draw(creepEnemyTex, 200, 200);
-        creepSprite.draw(batch);
-        creepEnemySprite.draw(batch);
-        font.draw(batch, "Hey there nice meme, friend", 200, 200);
+        for(int i=0; i < numCreepEnemies; ++i) {
+            creepEnemies.get(i).draw(batch);
+        }
+        for(int i=0; i < numCreeps; ++i) {
+            creeps.get(i).draw(batch);
+        }
+        font.draw(batch, meme, 200, 200);
 		batch.end();
 	}
 
@@ -105,7 +127,7 @@ public class AGame extends ApplicationAdapter implements GestureListener {
 
     @Override
     public boolean touchDown(float x, float y, int pointer, int button){
-        // memes
+        meme = String.format("(%.2f, %.2f), %d, %d", x/Gdx.graphics.getWidth(), y/Gdx.graphics.getHeight(), pointer, button);
         return false;
     }
 
@@ -126,7 +148,7 @@ public class AGame extends ApplicationAdapter implements GestureListener {
 
     @Override
     public boolean pan(float x, float y, float deltaX, float deltaY){
-        camera.translate(deltaX, 0);
+        camera.translate(-deltaX, deltaY);
         camera.update();
         return false;
     }
