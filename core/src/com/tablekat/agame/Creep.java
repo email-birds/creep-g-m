@@ -13,6 +13,7 @@ import com.badlogic.gdx.scenes.scene2d.Touchable;
 import com.badlogic.gdx.scenes.scene2d.actions.MoveByAction;
 import com.badlogic.gdx.input.GestureDetector.GestureListener;
 import com.badlogic.gdx.scenes.scene2d.utils.ActorGestureListener;
+import com.badlogic.gdx.utils.Align;
 
 public class Creep extends Actor {
 
@@ -25,6 +26,7 @@ public class Creep extends Actor {
 
     private float moveSpeed = 10;
     private float health = 500;
+    private float scale = 0.2f;
 
     public Creep(World world, boolean isEnemy){
         this.world = world;
@@ -34,9 +36,17 @@ public class Creep extends Actor {
         }else{
             sprite = new Sprite(new Texture(Gdx.files.internal("CreepEnemy.png")));
         }
-        //sprite.setOriginCenter();
+        sprite.setOriginCenter();
 
-        setBounds(sprite.getX(), sprite.getY(), sprite.getWidth(), sprite.getHeight());
+        setDebug(true);
+
+        float x = sprite.getX();
+        float y = sprite.getY();
+        setBounds(x, y, sprite.getWidth(), sprite.getHeight());
+        setOrigin(Align.center);
+        sprite.setScale(scale);
+        setScale(scale);
+
         setTouchable(Touchable.enabled);
 
         addListener(new InputListener(){
@@ -56,7 +66,7 @@ public class Creep extends Actor {
             public void touchDragged(InputEvent event, float x, float y, int pointer){
                 MoveByAction mba = new MoveByAction();
                 mba.setAmount(x - touchStartX, y - touchStartY);
-                mba.setDuration(0.1f);
+                mba.setDuration(0.001f);
 
                 Creep.this.addAction(mba);
             }
@@ -65,7 +75,9 @@ public class Creep extends Actor {
 
     @Override
     protected void positionChanged(){
-        sprite.setPosition(getX(), getY());
+        float x = getX();
+        float y = getY();
+        sprite.setPosition(x, y);
         super.positionChanged();
     }
 

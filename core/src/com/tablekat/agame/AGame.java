@@ -21,6 +21,8 @@ import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.ui.Image;
+import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton.TextButtonStyle;
@@ -34,15 +36,16 @@ import java.awt.event.InputEvent;
 import java.util.ArrayList;
 
 public class AGame extends ApplicationAdapter implements GestureListener {
-    private OrthographicCamera camera;
+    //private OrthographicCamera camera;
     private SpriteBatch batch;
     private BitmapFont font;
     private int timer = 0;
     private float elapsedTime = 0;
     private String meme = "";
-    private int width = 1280;
-    private int height = 720;
+    private int width = 400;//1280;
+    private int height = 300;//720;
     private Stage stage;
+    private Label label;
 
     private FPSLogger fpsLogger;
 
@@ -50,25 +53,29 @@ public class AGame extends ApplicationAdapter implements GestureListener {
 
     @Override
 	public void create () {
-        camera = new OrthographicCamera(width, height);
+        width = Gdx.graphics.getWidth();
+        height = Gdx.graphics.getHeight();
+        //camera = new OrthographicCamera(width, height);
         //camera = new OrthographicCamera();
-        camera.translate(width/2.0f, height/2.0f);
-        camera.update();
+        //camera.translate(width / 2.0f, height / 2.0f);
+        //camera.update();
 
 		batch = new SpriteBatch();
         //skin = new Skin(Gdx.files.internal("data/uiskin.json"));
         stage = new Stage(new ScreenViewport());
 
-        /*final TextButton button = new TextButton("nice meme", skin, "default");
-        button.setWidth(200f);
-        button.setHeight(20f);
-        button.setPosition(Gdx.graphics.getWidth() / 2 - 100f, Gdx.graphics.getHeight() / 2 - 10f);
-        button.addListener(new ClickListener() {
-            public void clicked(InputEvent event, float x, float y) {
-                button.setText("nice ;3");
-            }
-        });
-        stage.addActor(button);*/
+        // setup background
+        Image lane = new Image(new Texture("BackgroundLane.png"));
+        lane.setBounds(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+        Image base = new Image(new Texture("BackgroundBase.png"));
+        base.setBounds(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+        stage.addActor(lane);
+        stage.addActor(base);
+
+        // text data
+        label = new Label(";-; i hate it so much", new Label.LabelStyle(new BitmapFont(), Color.RED));
+        stage.addActor(label);
+        label.setPosition(0, 0);
 
         int numSprites = 5;
         for(int i=0; i < numSprites; ++i){
@@ -79,14 +86,14 @@ public class AGame extends ApplicationAdapter implements GestureListener {
         }
 
         float enemyCenterX = 0.8f * width;
-        float enemyCenterY = 0.5f * height;
+        float enemyCenterY = 0.8f * height;
         int numCreepEnemies = world.creepEnemies.size();
         for(int i=0; i < numCreepEnemies; ++i) {
             world.creepEnemies.get(i).setPosition(enemyCenterX + 100 * (float) Math.cos(2.0 * i / numCreepEnemies * Math.PI),
                     enemyCenterY + 100 * (float) Math.sin(2.0 * i / numCreepEnemies * Math.PI));
         }
         float centerX = 0.2f * width;
-        float centerY = 0.5f * height;
+        float centerY = 0.2f * height;
         int numCreeps = world.creeps.size();
         for(int i=1; i < numCreeps; ++i) {
             world.creeps.get(i).setPosition(centerX + 100 * (float) Math.cos(2.0 * i / numCreeps * Math.PI),
@@ -184,8 +191,8 @@ public class AGame extends ApplicationAdapter implements GestureListener {
     @Override
     public boolean pan(float x, float y, float deltaX, float deltaY){
         // does nothing
-        camera.translate(-deltaX, deltaY);
-        camera.update();
+        //camera.translate(-deltaX, deltaY);
+        //camera.update();
         return false;
     }
 

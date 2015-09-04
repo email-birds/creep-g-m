@@ -7,7 +7,7 @@ public class World {
     public ArrayList<Creep> creepEnemies;
 
     public World(){
-        creeps = new ArrayList<>();
-        creepEnemies = new ArrayList<>();
+        creeps = new ArrayList<Creep>();
+        creepEnemies = new ArrayList<Creep>();
     }
 }
